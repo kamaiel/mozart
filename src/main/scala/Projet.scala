@@ -5,9 +5,9 @@ import akka.actor._
 
 case class Terminal (id:Int, ip:String, port:Int)
 
-object Projet {
-
-   
+object Projet{
+     import DataBaseActor._
+     var lancedee = 0
      def main (args : Array[String]) {
           // Gestion des erreurs
           if (args.size != 1) {
@@ -37,8 +37,9 @@ object Projet {
           // Initialisation du node <id>
           val system = ActorSystem("MozartSystem" + id, ConfigFactory.load().getConfig("system" + id))
           val musicien = system.actorOf(Props(new Musicien(id, musicienlist)), "Musicien"+id)
+          val database = system.actorOf(Props[DataBaseActor], "DataBase")
 
-          musicien ! Start
+          musicien ! Start()
      }
 
 }

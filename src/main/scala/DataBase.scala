@@ -1,7 +1,7 @@
 package upmc.akka.leader
 
 import akka.actor._
-
+import scala.collection.mutable.ArrayBuffer
 
 
 object DataBaseActor {
@@ -12,10 +12,16 @@ object DataBaseActor {
  
  	case class GetMeasure (num:Int)
  	case class Start()
-	case class Boumboum(muscienlist : List[Terminal], alivedMusicians: Array[Int])
-	case class Play()
-	case class ImTheLeader(id: Int, timestamp : Long)
-	case class ImAPlayer(id : Int, timestamp : Long)
+	case class Boumboum(muscienlist : List[Terminal], alivedMusicians: ArrayBuffer[(Int,Int)])
+	case class Play(musicientlist : List[Terminal], alivedMusicians: ArrayBuffer[(Int,Int)])
+	case class ImTheLeader(id: Int, alivedMusicians: ArrayBuffer[(Int,Int)])
+	case class StartSymphony(alivedMusicians: ArrayBuffer[(Int,Int)])
+	case class ExecuteSymphony(chords:List[Chord])
+	case class ImAPlayer(id : Int, alivedMusicians: ArrayBuffer[(Int,Int)])
+	case class UpdateMusicianStatus(id: Int, status: (Int, Int))
+	case class ShutDown()
+	case class FinishInstruction()
+
 
 	val measures1 : List [Measure] = List (
 	Measure (List (Chord (0 , List (Note(42 ,610, 86), Note(54 ,594, 81), Note(81 ,315, 96))),

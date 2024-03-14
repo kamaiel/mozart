@@ -8,6 +8,7 @@ case class Terminal (id:Int, ip:String, port:Int)
 object Projet{
      import DataBaseActor._
      var lancedee = 0
+     var leader = false 
      def main (args : Array[String]) {
           // Gestion des erreurs
           if (args.size != 1) {

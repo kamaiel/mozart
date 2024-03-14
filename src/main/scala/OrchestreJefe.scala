@@ -6,9 +6,13 @@ import scala.concurrent.duration._
 import akka.actor._
 import upmc.akka.leader.Projet.{lancedee}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.mutable.ArrayBuffer
 
 
-class OrchestreJefe (player: ActorRef, database : ActorSelection) extends Actor {
+
+class OrchestreJefe (id : Int, heart: ActorRef, database : ActorSelection) extends Actor {
+         var alivedMusicians = ArrayBuffer((-1,0),(-1,0),(-1,0),(-1,0))
+         var terminaux = List[Terminal]()
 
           var partie1 = Array.ofDim[Int](11,8)
           partie1 = Array(Array(96, 22, 141, 41, 105, 122, 11, 30),
@@ -38,7 +42,10 @@ class OrchestreJefe (player: ActorRef, database : ActorSelection) extends Actor 
 
           val r = new scala.util.Random
           def receive = {
-               case Play() => {
+               case Play(term, alive) => {
+                    alivedMusicians = alive
+                    terminaux = term
+
                     val result = r.nextInt(6)+1 + 1+r.nextInt(6)
                          if (lancedee < 8) {
                          val getMeasure = partie1(result-2)(lancedee)
@@ -50,8 +57,20 @@ class OrchestreJefe (player: ActorRef, database : ActorSelection) extends Actor 
                     lancedee = (lancedee+1)%16
                }
                case Measure (n) => {
-                    player ! Measure(n)
-                    context.system.scheduler.scheduleOnce(1800.millisecond, self, Start())
+                    var found = false
+                    var index = 0
+                    while (!found) {
+                        val index_random = r.nextInt(4)
+                        if (alivedMusicians(index_random)._1 == 0) {
+                            found = true
+                            index = index_random
+                        }
+                    }
+                    println(alivedMusicians)
+                    val remoteActor = context.actorSelection("akka.tcp://MozartSystem" + terminaux(index).id + "@" + terminaux(index).ip.replace("\"","") + ":" + terminaux(index).port + "/user/Musicien" + terminaux(index).id)
+                    remoteActor ! ExecuteSymphony(n)
+
+                    context.system.scheduler.scheduleOnce(1800.millisecond, heart, FinishInstruction())
                }
           } 
      }

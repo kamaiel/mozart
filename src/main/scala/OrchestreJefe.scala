@@ -66,7 +66,6 @@ class OrchestreJefe (id : Int, heart: ActorRef, database : ActorSelection) exten
                             index = index_random
                         }
                     }
-                    println(alivedMusicians)
                     val remoteActor = context.actorSelection("akka.tcp://MozartSystem" + terminaux(index).id + "@" + terminaux(index).ip.replace("\"","") + ":" + terminaux(index).port + "/user/Musicien" + terminaux(index).id)
                     remoteActor ! ExecuteSymphony(n)
 

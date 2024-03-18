@@ -59,15 +59,11 @@ class OrchestreJefe (id : Int, ip: String, port: Int, heart: ActorRef, database 
                     displayActor ! Message ("Next measure that should be played " + getMeasure)
                }
                case Measure (n) => {
-                    var found = false
-                    var index = 0
-                    while (!found) {
-                        val index_random = r.nextInt(4)
-                        if (alivedMusicians(index_random)._1 == 0) {
-                            found = true
-                            index = index_random
-                        }
+                    val players = alivedMusicians.zipWithIndex.collect {
+                         case ((status,_), index) if status == 0 => index
                     }
+                    val index = players(r.nextInt(players.length))
+          
                     val remoteActor = context.actorSelection("akka.tcp://MozartSystem" + terminaux(index).id + "@" + terminaux(index).ip.replace("\"","") + ":" + terminaux(index).port + "/user/Musicien" + terminaux(index).id)
                     displayActor ! Message ("Order " + terminaux(index).id + " to play")
                     remoteActor ! ExecuteSymphony(id,n)

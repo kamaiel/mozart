@@ -37,7 +37,7 @@ object Projet{
 
           // Initialisation du node <id>
           val system = ActorSystem("MozartSystem" + id, ConfigFactory.load().getConfig("system" + id))
-          val musicien = system.actorOf(Props(new Musicien(id, musicienlist)), "Musicien"+id)
+          val musicien = system.actorOf(Props(new Musicien(id, musicienlist(id).ip, musicienlist(id).port, musicienlist)), "Musicien"+id)
           val database = system.actorOf(Props[DataBaseActor], "DataBase")
 
           musicien ! Start()

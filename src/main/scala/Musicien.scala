@@ -32,32 +32,33 @@ object MusicienActor {
   }
 }
 
-class Musicien(val id: Int, val terminaux: List[Terminal]) extends Actor {
+class Musicien(val id: Int, ip: String, port: Int, val terminaux: List[Terminal]) extends Actor {
   import DataBaseActor._
   val player = context.actorOf(Props(new Player))
   val db = context.actorSelection("/user/DataBase")
-  val heart = context.actorOf(Props(new Heart(id)), "Heart")
-  val orchestreJefe = context.actorOf(Props(new OrchestreJefe(id, heart, db)))
+  val heart = context.actorOf(Props(new Heart(id, ip, port)), "Heart")
+  val orchestreJefe = context.actorOf(Props(new OrchestreJefe(id, ip, port, heart, db)))
   var alivedMusicians = ArrayBuffer((-1, 0), (-1, 0), (-1, 0), (-1, 0))
-  var displayActor = context.actorOf(Props[DisplayActor], name = "displayActor")
+  var displayActor = context.actorOf(Props[DisplayActor], "displayActor")
   alivedMusicians(id) = (0, alivedMusicians(id)._2)
 
   def receive = {
     case Start() => {
-      heart ! Boumboum(terminaux, alivedMusicians)
+     displayActor ! DisplayTab(alivedMusicians)
+     heart ! Boumboum(terminaux, alivedMusicians)
     }
 
     case StartSymphony(alivedMusicians) => {
-      displayActor ! Message("Id :" + id.toString + " Give Measure")
       orchestreJefe ! Play(terminaux, alivedMusicians)
     }
 
-    case ExecuteSymphony(l) => {
-      displayActor ! Message("Id : " + id.toString + " Play measure")
+    case ExecuteSymphony(id,l) => {
+     displayActor ! Message("Playing under the supervision of " + id)
       player ! Measure(l)
     }
 
     case ShutDown() => {
+     displayActor ! Message ("Well, I'm off")
       context.stop(self)
     }
 

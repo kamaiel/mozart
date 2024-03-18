@@ -8,11 +8,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import upmc.akka.leader.Projet.{leader}
 
 
-class Heart(my_id:Int) extends Actor {
+class Heart(my_id:Int, my_ip:String, my_port: Int) extends Actor {
     case object PreElect
     case class PreElectResponse(status: Int)
 
-    val displayActor = context.actorOf(Props[DisplayActor], name = "displayActor")
+    val displayActor = context.actorSelection("akka.tcp://MozartSystem" + my_id + "@" + my_ip.replace("\"","") + ":" + my_port + "/user/Musicien" + my_id + "/displayActor")
     var waiting_turn_for_player = 0 
     var election_jeffe = 0 
     var leader_existant = false
@@ -60,7 +60,10 @@ class Heart(my_id:Int) extends Actor {
             
             if(alivedMusicians(my_id)._1 == 1) {
                 alivedMusicians.indexWhere(_._1 == 0) match {
-                    case -1 => waiting_turn_for_player +=1
+                    case -1 => {
+                        displayActor ! Message ("Waiting for players ...")
+                        waiting_turn_for_player +=1
+                    }
                     case index => waiting_turn_for_player = 0 
                 }
             }

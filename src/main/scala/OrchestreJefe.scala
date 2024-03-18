@@ -10,9 +10,10 @@ import scala.collection.mutable.ArrayBuffer
 
 
 
-class OrchestreJefe (id : Int, heart: ActorRef, database : ActorSelection) extends Actor {
+class OrchestreJefe (id : Int, ip: String, port: Int, heart: ActorRef, database : ActorSelection) extends Actor {
          var alivedMusicians = ArrayBuffer((-1,0),(-1,0),(-1,0),(-1,0))
          var terminaux = List[Terminal]()
+         val displayActor = context.actorSelection("akka.tcp://MozartSystem" + id + "@" + ip.replace("\"","") + ":" + port + "/user/Musicien" + id + "/displayActor")
 
           var partie1 = Array.ofDim[Int](11,8)
           partie1 = Array(Array(96, 22, 141, 41, 105, 122, 11, 30),
@@ -45,16 +46,17 @@ class OrchestreJefe (id : Int, heart: ActorRef, database : ActorSelection) exten
                case Play(term, alive) => {
                     alivedMusicians = alive
                     terminaux = term
-
+                    var getMeasure = -1
                     val result = r.nextInt(6)+1 + 1+r.nextInt(6)
-                         if (lancedee < 8) {
-                         val getMeasure = partie1(result-2)(lancedee)
+                    if (lancedee < 8) {
+                         getMeasure = partie1(result-2)(lancedee)
                          database ! GetMeasure(getMeasure-1)
                     } else {
-                         val getMeasure = partie2(result-2)(lancedee%8)
+                         getMeasure = partie2(result-2)(lancedee%8)
                          database ! GetMeasure(getMeasure - 1)
                     }
                     lancedee = (lancedee+1)%16
+                    displayActor ! Message ("Next measure that should be played " + getMeasure)
                }
                case Measure (n) => {
                     var found = false
@@ -67,7 +69,8 @@ class OrchestreJefe (id : Int, heart: ActorRef, database : ActorSelection) exten
                         }
                     }
                     val remoteActor = context.actorSelection("akka.tcp://MozartSystem" + terminaux(index).id + "@" + terminaux(index).ip.replace("\"","") + ":" + terminaux(index).port + "/user/Musicien" + terminaux(index).id)
-                    remoteActor ! ExecuteSymphony(n)
+                    displayActor ! Message ("Order " + terminaux(index).id + " to play")
+                    remoteActor ! ExecuteSymphony(id,n)
 
                     context.system.scheduler.scheduleOnce(1800.millisecond, heart, FinishInstruction())
                }

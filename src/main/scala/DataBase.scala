@@ -16,7 +16,7 @@ object DataBaseActor {
 	case class Play(musicientlist : List[Terminal], alivedMusicians: ArrayBuffer[(Int,Int)])
 	case class ImTheLeader(id: Int, alivedMusicians: ArrayBuffer[(Int,Int)])
 	case class StartSymphony(alivedMusicians: ArrayBuffer[(Int,Int)])
-	case class ExecuteSymphony(chords:List[Chord])
+	case class ExecuteSymphony(id:Int, chords:List[Chord])
 	case class ImAPlayer(id : Int, alivedMusicians: ArrayBuffer[(Int,Int)])
 	case class UpdateMusicianStatus(id: Int, status: (Int, Int))
 	case class ShutDown()

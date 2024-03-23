@@ -9,9 +9,6 @@ import upmc.akka.leader.Projet.{leader}
 
 
 class Heart(my_id:Int, my_ip:String, my_port: Int) extends Actor {
-    case object PreElect
-    case class PreElectResponse(status: Int)
-
     val displayActor = context.actorSelection("akka.tcp://MozartSystem" + my_id + "@" + my_ip.replace("\"","") + ":" + my_port + "/user/Musicien" + my_id + "/displayActor")
     var waiting_turn_for_player = 0 
     var election_jeffe = 0 
